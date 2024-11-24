@@ -1,18 +1,22 @@
 import { useState } from "react";
-import "./App.css";
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
 import { Checkbox } from "./components/ui/checkbox";
+import { TodoItem } from "./type/todo-item";
 
-function App() {
+function TodoApp() {
   const [inputValue, setInputValue] = useState("");
-  const [todoList, setTodoList] = useState<string[]>([]);
-  var selectedItem = false;
+  const [todoList, setTodoList] = useState<TodoItem[]>([]);
 
   const handleAddItem = () => {
     if (!!inputValue) {
-      setTodoList([...todoList, inputValue]);
-      console.log(inputValue);
+      setTodoList((todoList) => [
+        ...todoList,
+        {
+          name: inputValue,
+          completed: false,
+        },
+      ]);
     }
   };
 
@@ -20,16 +24,26 @@ function App() {
     setTodoList(todoList.filter((_, index) => index !== removeIndex));
   };
 
+  const handleCompetedItem = (index: number) => {
+    setTodoList((todoList) =>
+      todoList.map((todo, i) =>
+        i === index ? { ...todo, completed: !todo.completed } : todo
+      )
+    );
+  };
+
+  const completedCount = todoList.filter((todo) => todo.completed).length;
+
   return (
-    <>
-      <div className="w-full mx-auto border-2 rounded-md border-gray-200 p-5">
-        <div className="flex justify-between">
-          <p className="text-xl text-left font-bold pb-2 ">Todo List</p>
-          <p className="text-xl text-left font-bold pb-2 ">
-            {todoList.length} /{" "}
+    <div className="absolute inset-0 flex items-center justify-center">
+      <div className="w-1/3 border-2 rounded-md border-gray-200 p-5">
+        <div className="flex justify-between pb-4 font-bold">
+          <p className="text-xl text-left ">Todo List</p>
+          <p className="text-sm text-right self-center ">
+            {completedCount}/{todoList.length}
           </p>
         </div>
-        <div className="grid-cols-2 gap-3 flex justify-between">
+        <div className="grid-cols-2 gap-3 flex justify-between pb-4">
           <Input
             className="gap-1.5"
             type="text"
@@ -50,27 +64,37 @@ function App() {
 
         <div className="my-3">
           {todoList.map((item, index) => (
-            <p className="flex justify-between">
-              <div className="flex items-start gap-1.5">
-                <Checkbox
-                  value={"Checkbox"}
-                  onClick={() => {
-                    selectedItem = true;
-                  }}
-                />
-                <p>{selectedItem ? <dl>{item}</dl> : <p>{item}</p>}</p>
-              </div>
-              <div
-                className="justify-self-end"
-                onClick={() => handleRemoveItem(index)}
-              >
-                {trash}
-              </div>
-            </p>
+            <>
+              <p className="flex justify-between items-stretch my-2">
+                <div className="flex items-start gap-1.5 ">
+                  <Checkbox
+                    className="self-center"
+                    onClick={() => {
+                      handleCompetedItem(index);
+                    }}
+                  />
+                  <div className="self-center text-sm font-bold ">
+                    {item.completed ? (
+                      <del>{item.name}</del>
+                    ) : (
+                      <p>{item.name}</p>
+                    )}
+                  </div>
+                </div>
+                <div
+                  className="justify-self-end"
+                  onClick={() => handleRemoveItem(index)}
+                >
+                  {trash}
+                </div>
+              </p>
+
+              <hr />
+            </>
           ))}
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -81,7 +105,7 @@ const trash = (
     viewBox="0 0 24 24"
     strokeWidth={1.5}
     stroke="currentColor"
-    className="size-6 text-red-700"
+    className="size-6 text-rose-500"
   >
     <path
       strokeLinecap="round"
@@ -90,4 +114,4 @@ const trash = (
     />
   </svg>
 );
-export default App;
+export default TodoApp;
